@@ -44,7 +44,7 @@ def escape_latex(text):
     replacements = {
         '&': r'\&',
         '%': r'\%',
-        '$': r'$',
+        '$': r'\$',
         '#': r'\#',
         '_': r'\_',
         '{': r'\{',
@@ -53,9 +53,8 @@ def escape_latex(text):
         '^': r'\textasciicircum{}',
         '\\': r'\textbackslash{}',
     }
-    for old, new in replacements.items():
-        text = text.replace(old, new)
-    return text
+    return ''.join(replacements.get(ch, ch) for ch in text)
+
 
 def process_csv(input_file, output_file):
     """Hauptfunktion zur Verarbeitung der CSV-Datei"""
@@ -92,7 +91,7 @@ def process_csv(input_file, output_file):
                     transactions.append({
                         'datum': date_obj,
                         'datum_str': format_date_for_output(date_obj),
-                        'bezeichnung': empfaenger,
+                        'bezeichnung': escape_latex(empfaenger),
                         'betrag': betrag,
                         'einnahmen': format_german_number(betrag) if betrag > 0 else '',
                         'ausgaben': format_german_number(betrag) if betrag < 0 else ''
@@ -160,7 +159,7 @@ def process_csv(input_file, output_file):
 
             # Schreibe Transaktionen
             for trans in table_transactions:
-                f.write(f"    & {trans['datum_str']} & {escape_latex(trans['bezeichnung'])} & {trans['einnahmen']} & {trans['ausgaben']} \\\\ \\hline\n")
+                f.write(f"    & {trans['datum_str']} & {trans['bezeichnung']} & {trans['einnahmen']} & {trans['ausgaben']} \\\\ \\hline\n")
 
             # Schreibe Übertrag
             f.write(r"    \thickhline" + "\n")
