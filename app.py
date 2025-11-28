@@ -4,6 +4,7 @@ import sys
 
 from flask import Flask, request, send_file, render_template_string
 from werkzeug.utils import secure_filename
+from csv_to_latex import process_csv
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"
@@ -61,11 +62,8 @@ def upload_file():
     pdf_path = os.path.join(app.config["OUTPUT_FOLDER"], f"{base_name}.pdf")
 
     try:
-        # Run csv_to_latex.py
-        result_csv = subprocess.run(
-            [sys.executable, os.path.join(os.path.dirname(__file__), "csv_to_latex.py"), input_path, tex_path],
-            capture_output=True, text=True, check=True
-        )
+        # Run csv_to_latex
+        process_csv(input_path, tex_path)
 
         # Compile LaTeX to PDF (twice for references), capture output
         for _ in range(2):
@@ -86,10 +84,9 @@ def upload_file():
 
         return send_file(pdf_path, as_attachment=True)
 
-    except subprocess.CalledProcessError as e:
-        stderr = e.stderr or ""
-        stdout = e.stdout or ""
-        return f"Error during processing:\n{e}\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}", 500
+    except Exception as e:
+        # Capture errors from processing or LaTeX compilation
+        return f"Error during processing:\n{e}", 500
 
 
 if __name__ == "__main__":
