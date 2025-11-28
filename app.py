@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 
 from flask import Flask, request, send_file, render_template_string
 from werkzeug.utils import secure_filename
@@ -18,22 +17,76 @@ app.config["OUTPUT_FOLDER"] = OUTPUT_FOLDER
 
 HTML_PAGE = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>CSV → PDF Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        .box { border: 1px solid #ccc; padding: 2em; border-radius: 8px; max-width: 400px; }
+        :root {
+            color-scheme: light dark;
+            font-family: "Segoe UI", sans-serif;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(160deg, #f5f7fa, #c3cfe2);
+        }
+        .box {
+            background: #fff;
+            color: #222;
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.12);
+            max-width: 420px;
+            width: 90%;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+        p {
+            margin: 0.6rem 0 1.8rem;
+        }
+        label {
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+        input[type="file"] {
+            width: 100%;
+        }
+        button {
+            margin-top: 1.4rem;
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #4f46e5;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79,70,229,0.35);
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>CSV → PDF Converter</h2>
+    <main class="box">
+        <h1>CSV → PDF Converter</h1>
+        <p>Upload a .csv file and get a LaTeX-rendered PDF in seconds.</p>
         <form method="post" enctype="multipart/form-data" action="/upload" target="_blank">
-            <input type="file" name="file" accept=".csv" required><br><br>
-            <button type="submit">Convert</button>
+            <label for="csv-input">Select CSV file</label>
+            <input id="csv-input" type="file" name="file" accept=".csv" required>
+            <button type="submit" aria-label="Convert CSV to PDF">Convert</button>
         </form>
-    </div>
+    </main>
 </body>
 </html>
 """
