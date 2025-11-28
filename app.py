@@ -1,5 +1,7 @@
 import os
 import subprocess
+import sys
+
 from flask import Flask, request, send_file, render_template_string
 from werkzeug.utils import secure_filename
 
@@ -59,20 +61,35 @@ def upload_file():
     pdf_path = os.path.join(app.config["OUTPUT_FOLDER"], f"{base_name}.pdf")
 
     try:
-        # Step 1: Run csv_to_latex.py
-        subprocess.run(["python", "csv_to_latex.py", input_path, tex_path], check=True)
-
-        # Step 2: Compile LaTeX to PDF
-        subprocess.run(
-            ["pdflatex", "-interaction=nonstopmode", "-output-directory", app.config["OUTPUT_FOLDER"], tex_path],
-            check=True
+        # Run csv_to_latex.py
+        result_csv = subprocess.run(
+            [sys.executable, os.path.join(os.path.dirname(__file__), "csv_to_latex.py"), input_path, tex_path],
+            capture_output=True, text=True, check=True
         )
 
-        # Return PDF
+        # Compile LaTeX to PDF (twice for references), capture output
+        for _ in range(2):
+            subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "-output-directory", app.config["OUTPUT_FOLDER"], tex_path],
+                capture_output=True, text=True, check=True
+            )
+
+        # Clean auxiliary files
+        aux_exts = (".aux", ".log", ".out", ".toc")
+        for ext in aux_exts:
+            aux_file = os.path.join(app.config["OUTPUT_FOLDER"], f"{base_name}{ext}")
+            try:
+                if os.path.exists(aux_file):
+                    os.remove(aux_file)
+            except OSError:
+                pass
+
         return send_file(pdf_path, as_attachment=True)
 
     except subprocess.CalledProcessError as e:
-        return f"Error during processing: {e}", 500
+        stderr = e.stderr or ""
+        stdout = e.stdout or ""
+        return f"Error during processing:\n{e}\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}", 500
 
 
 if __name__ == "__main__":
