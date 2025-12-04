@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from flask import Flask, request, send_from_directory, render_template_string, url_for
 from werkzeug.utils import secure_filename
@@ -70,7 +69,7 @@ HTML_PAGE = """
 <body>
     <main class="box">
         <h1>CSV → PDF Converter</h1>
-        <p>Upload one or more .csv files and get LaTeX-rendered PDFs.</p>
+        <p>Upload one or more .csv files and get ReportLab-generated PDFs.</p>
         <form method="post" enctype="multipart/form-data" action="/upload" target="_blank">
             <label for="csv-input">Select CSV files</label>
             <input id="csv-input" type="file" name="files" accept=".csv" multiple required>
@@ -111,41 +110,17 @@ def upload_file():
             counter += 1
 
         input_path = os.path.join(app.config["UPLOAD_FOLDER"], f"{stem}.csv")
-        tex_path = os.path.join(app.config["OUTPUT_FOLDER"], f"{stem}.tex")
         pdf_path = os.path.join(app.config["OUTPUT_FOLDER"], f"{stem}.pdf")
 
         file.save(input_path)
 
         try:
-            process_csv(input_path, tex_path)
-            for _ in range(2):
-                subprocess.run(
-                    [
-                        "pdflatex",
-                        "-interaction=nonstopmode",
-                        "-halt-on-error",
-                        "-output-directory",
-                        app.config["OUTPUT_FOLDER"],
-                        tex_path,
-                    ],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-
-            for ext_to_clean in (".aux", ".log", ".out", ".toc"):
-                aux_file = os.path.join(app.config["OUTPUT_FOLDER"], f"{stem}{ext_to_clean}")
-                if os.path.exists(aux_file):
-                    try:
-                        os.remove(aux_file)
-                    except OSError:
-                        pass
+            # Process CSV directly to PDF with ReportLab
+            process_csv(input_path, pdf_path)
 
             pdf_url = url_for("serve_output", filename=f"{stem}.pdf", _external=True)
             pdf_links.append((stem, pdf_url))
 
-        except subprocess.CalledProcessError as err:
-            return f"LaTeX compilation failed for {filename}:\n{err.stderr}", 500
         except Exception as err:
             return f"Error during processing {filename}:\n{err}", 500
 
@@ -184,4 +159,4 @@ def serve_output(filename):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
