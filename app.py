@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, send_from_directory, render_template_string, url_for
 from werkzeug.utils import secure_filename
 
-from csv_to_latex import process_csv
+from csv_to_pdf import process_csv
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"

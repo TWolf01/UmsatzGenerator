@@ -33,5 +33,5 @@ pip install -r requirements.txt
 
 You can also use the script directly from the command line:
 ```bash
-python csv_to_latex.py input.csv output.pdf
+python csv_to_pdf.py input.csv output.pdf
 ```
