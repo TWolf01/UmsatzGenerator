@@ -43,7 +43,13 @@ def format_date_for_output(date_obj):
         return date_obj.strftime('%d.%m.%Y')
     return ''
 
-
+def add_page_number(canvas, doc):
+    canvas.saveState()
+    if canvas.getPageNumber() == 1:
+        canvas.setTitle('')
+    canvas.setFont("Helvetica", 9)
+    canvas.drawCentredString(A4[0] / 2, 1.2 * cm, f"Seite {canvas.getPageNumber()}")
+    canvas.restoreState()
 
 def process_csv(input_file, output_file):
     """Hauptfunktion zur Verarbeitung der CSV-Datei"""
@@ -104,6 +110,7 @@ def process_csv(input_file, output_file):
         topMargin=2*cm,
         bottomMargin=2*cm
     )
+    doc.title = ''
 
     # Container for PDF elements
     elements = []
@@ -260,7 +267,7 @@ def process_csv(input_file, output_file):
     elements.append(summary_table)
 
     # Build PDF
-    doc.build(elements)
+    doc.build(elements, onFirstPage=add_page_number, onLaterPages=add_page_number)
 
 
 
