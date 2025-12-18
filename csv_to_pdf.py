@@ -67,8 +67,10 @@ def process_csv(input_file, output_file):
                 reader.fieldnames = [fn.strip() for fn in reader.fieldnames]
 
                 for row in reader:
-                    # Normalize keys for Sparkasse vs. Commerzbank
-                    buchungstag = row.get('Buchungstag')
+                    buchungstag = (
+                        row.get('Buchungstag') or
+                        row.get('Buchungsdatum')
+                    )
                     betrag_str = row.get('Betrag')
                     empfaenger = (
                         row.get('Beguenstigter/Zahlungspflichtiger') or
