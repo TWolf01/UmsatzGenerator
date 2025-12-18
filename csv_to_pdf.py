@@ -71,7 +71,10 @@ def process_csv(input_file, output_file):
                         row.get('Buchungstag') or
                         row.get('Buchungsdatum')
                     )
-                    betrag_str = row.get('Betrag')
+                    betrag_str = (
+                        row.get('Betrag') or
+                        row.get('Betrag(EUR)')
+                    )
                     empfaenger = (
                         row.get('Beguenstigter/Zahlungspflichtiger') or
                         row.get('Begünstigter / Auftraggeber') or
