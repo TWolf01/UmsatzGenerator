@@ -102,10 +102,6 @@ def process_csv(input_file, output_file):
     # Sortiere nach Datum (älteste zuerst)
     transactions.sort(key=lambda x: x['datum'])
 
-    # Change output_file extension from .tex to .pdf
-    if output_file.endswith('.tex'):
-        output_file = output_file[:-4] + '.pdf'
-
     # Create PDF with ReportLab
     doc = SimpleDocTemplate(
         output_file,
