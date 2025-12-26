@@ -60,10 +60,10 @@ def process_csv(input_file, output_file):
 
     # Try Sparkasse encoding first, fallback to Commerzbank
     for encoding in ('utf-8-sig', 'iso-8859-15'):
+        transactions.clear()  # Clear any partial results from failed encoding
         try:
             with open(input_file, 'r', encoding=encoding) as f:
                 reader = csv.DictReader(f, delimiter=';', quotechar='"')
-                # Normalize fieldnames (strip, unify spacing, umlauts etc.)
                 reader.fieldnames = [fn.strip() for fn in reader.fieldnames]
 
                 for row in reader:
