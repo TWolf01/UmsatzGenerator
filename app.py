@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request, send_from_directory, render_template_string, url_for
+from flask import Flask, request, send_from_directory, render_template_string, url_for, redirect
 from werkzeug.utils import secure_filename
 
 from csv_to_pdf import process_csv
@@ -117,12 +117,13 @@ def upload_file():
         try:
             # Process CSV directly to PDF with ReportLab
             process_csv(input_path, pdf_path)
-
             pdf_url = url_for("serve_output", filename=f"{stem}.pdf", _external=True)
             pdf_links.append((stem, pdf_url))
-
         except Exception as err:
             return f"Error during processing {filename}:\n{err}", 500
+
+    if len(pdf_links) == 1:
+        return redirect(pdf_links[0][1])
 
     links_html = "".join(
         f'<li><a href="{url}" target="_blank" rel="noopener">{name}.pdf</a></li>'
@@ -149,7 +150,6 @@ def upload_file():
     </body>
     </html>
     """
-
     return result_page
 
 
