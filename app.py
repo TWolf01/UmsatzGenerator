@@ -1,7 +1,20 @@
+import re
 import os
 
 from flask import Flask, request, send_from_directory, render_template_string, url_for, redirect
-from werkzeug.utils import secure_filename
+from unicodedata import normalize
+
+
+def sanitize_filename(name: str) -> str:
+    """Keep umlauts while stripping path separators and unsafe characters."""
+    name = normalize("NFC", name or "")
+    name = os.path.basename(name)
+    name = name.replace("\\", "").replace("/", "")
+    base, ext = os.path.splitext(name)
+    # Allow letters, numbers, spaces, dashes, underscores, dots, umlauts, and ß
+    base = re.sub(r"[^0-9A-Za-z äöüÄÖÜß._-]+", "", base).strip()
+    ext = re.sub(r"[^0-9A-Za-z]+", "", ext)
+    return (base or "csv_file") + (f".{ext}" if ext else "")
 
 from csv_to_pdf import process_csv
 
@@ -97,7 +110,7 @@ def upload_file():
 
     pdf_links = []
     for file in files:
-        filename = secure_filename(file.filename)
+        filename = sanitize_filename(file.filename)
         base_name, ext = os.path.splitext(filename)
         if ext.lower() != ".csv":
             return "Only .csv files are allowed", 400
